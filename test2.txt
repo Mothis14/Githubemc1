@@ -1,0 +1,6 @@
+{
+  "recipient": "recipient@example.com",
+  "subject": "Test Email from AWS Lambda",
+  "body_text": "This is a plain text body for the email.",
+  "body_html": "<html><body><p>This is an HTML body for the email.</p></body></html>"
+}
