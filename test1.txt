@@ -1,1 +1,64 @@
-created test1.txt file
+import boto3
+import json
+import os
+
+def lambda_handler(event, context):
+    # Initialize the AWS SES client
+    ses_client = boto3.client('ses', region_name='us-east-1')
+
+    # Retrieve sender and recipient from environment variables or event
+    sender = os.environ.get('SENDER_EMAIL', 'your_verified_sender@example.com')
+    recipient = event.get('recipient', 'recipient@example.com')
+    
+    # Email content
+    subject = event.get('subject', 'Automated Email from AWS Lambda')
+    body_text = event.get('body_text', 'This is an automated email sent using AWS Lambda and SES.')
+    body_html = event.get('body_html', """
+    <html>
+        <body>
+            <h1>Automated Email</h1>
+            <p>This is a test email sent using <b>AWS Lambda</b> and <b>SES</b>.</p>
+        </body>
+    </html>
+    """)
+
+    try:
+        # Send email using SES
+        response = ses_client.send_email(
+            Source=sender,
+            Destination={
+                'ToAddresses': [recipient]
+            },
+            Message={
+                'Subject': {
+                    'Data': subject,
+                    'Charset': 'UTF-8'
+                },
+                'Body': {
+                    'Text': {
+                        'Data': body_text,
+                        'Charset': 'UTF-8'
+                    },
+                    'Html': {
+                        'Data': body_html,
+                        'Charset': 'UTF-8'
+                    }
+                }
+            }
+        )
+
+        return {
+            'statusCode': 200,
+            'body': json.dumps({
+                'message': 'Email sent successfully!',
+                'messageId': response['MessageId']
+            })
+        }
+
+    except Exception as e:
+        return {
+            'statusCode': 500,
+            'body': json.dumps({
+                'error': str(e)
+            })
+        }
